@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
 type Note = {
   id: number;
   body: string;
@@ -15,11 +16,30 @@ type Issue = {
 };
 
 export default function Home() {
-  const [issues, setIssues] = useState<Issue[]>([]);
-
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("Waiting");
   const [notes, setNotes] = useState("");
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [issues, setIssues] = useState<Issue[]>([]);
+
+  useEffect(() => {
+    const savedIssues = localStorage.getItem("issues");
+
+    if (savedIssues) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIssues(JSON.parse(savedIssues));
+    }
+
+    setHasLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoaded) {
+      return;
+    }
+
+    localStorage.setItem("issues", JSON.stringify(issues));
+  }, [issues, hasLoaded]);
 
   const handleAddIssue = (event: React.SyntheticEvent) => {
     event.preventDefault();
@@ -111,9 +131,6 @@ export default function Home() {
                   <h2 className="text-lg font-semibold text-zinc-900">
                     {issue.title}
                   </h2>
-                  <p className="mt-1 text-sm text-zinc-500">
-                    {issue.createdAt}
-                  </p>
 
                   <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800">
                     {issue.status}
